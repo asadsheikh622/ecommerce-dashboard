@@ -1,0 +1,6 @@
+{
+  "name": "E-Commerce Admin Dashboard",
+  "description": "Modern premium e-commerce admin dashboard with multi-currency PKR/USD support, profit & loss management, catalogue, orders, and store analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
