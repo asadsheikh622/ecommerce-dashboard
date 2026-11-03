@@ -73,12 +73,24 @@ export const OrdersPage: React.FC<{ onMobileMenuToggle: () => void }> = ({ onMob
       });
   }, [orders, searchTerm, orderStatusFilter, paymentStatusFilter, dateSort]);
 
-  // Statistics matching Screenshot 4
-  const totalOrdersCount = 76; // Benchmark from screenshot
-  const pendingCount = 6;
-  const processingCount = 18;
-  const deliveredCount = 27;
-  const cancelledCount = 3;
+  // Dynamic Statistics from Database Orders
+const totalOrdersCount = orders.length;
+
+const pendingCount = orders.filter(
+  (order) => order.status === 'Pending'
+).length;
+
+const processingCount = orders.filter(
+  (order) => order.status === 'Processing'
+).length;
+
+const deliveredCount = orders.filter(
+  (order) => order.status === 'Delivered'
+).length;
+
+const cancelledCount = orders.filter(
+  (order) => order.status === 'Cancelled'
+).length;
 
   const topStats: TopStatItem[] = [
     {
@@ -267,11 +279,10 @@ export const OrdersPage: React.FC<{ onMobileMenuToggle: () => void }> = ({ onMob
                       {/* Payment */}
                       <td className="py-3.5 px-3">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                            order.paymentStatus === 'Paid'
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${order.paymentStatus === 'Paid'
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                               : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          }`}
+                            }`}
                         >
                           {order.paymentStatus}
                         </span>
@@ -313,6 +324,18 @@ export const OrdersPage: React.FC<{ onMobileMenuToggle: () => void }> = ({ onMob
                                 <Eye className="w-3.5 h-3.5 text-zinc-400" />
                                 <span>Order Details & Profit</span>
                               </button>
+
+                              <button
+                                onClick={() => {
+                                  updateOrderStatus(order.id, 'Processing');
+                                  setActionDropdownOpenId(null);
+                                }}
+                                className="w-full px-3 py-1.5 text-xs text-left text-blue-400 hover:bg-blue-500/10 flex items-center gap-2"
+                              >
+                                <Truck className="w-3.5 h-3.5" />
+                                <span>Mark Processing</span>
+                              </button>
+
                               <button
                                 onClick={() => {
                                   updateOrderStatus(order.id, 'Delivered');
@@ -532,9 +555,8 @@ export const OrdersPage: React.FC<{ onMobileMenuToggle: () => void }> = ({ onMob
                 {viewingOrder.timeline.map((event, idx) => (
                   <div key={idx} className="flex items-center gap-3 text-xs">
                     <div
-                      className={`w-2.5 h-2.5 rounded-full ${
-                        event.completed ? 'bg-orange-500 shadow-sm shadow-orange-500/50' : 'bg-zinc-700'
-                      }`}
+                      className={`w-2.5 h-2.5 rounded-full ${event.completed ? 'bg-orange-500 shadow-sm shadow-orange-500/50' : 'bg-zinc-700'
+                        }`}
                     />
                     <span className="font-medium text-zinc-200">{event.title}</span>
                     <span className="text-zinc-500 text-[11px] ml-auto">{event.time}</span>

@@ -1,4 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { getMonthlyGoal } from '../services/settingsApi';
+import { getVisitors } from '../services/visitorApi';
+import {
+  updateOrderStatusApi,
+  updatePaymentStatusApi,
+} from '../services/orderApi';
 import {
   Category,
   DateRangeState,
@@ -21,7 +27,14 @@ import {
   INITIAL_STOREFRONT,
   INITIAL_USERS,
 } from '../data/mockData';
-
+import {
+  getAdminProducts,
+  createProduct,
+  editProduct,
+  removeProduct,
+  restoreProductApi,
+} from '../services/productApi';
+import { getAdminOrders } from '../services/orderApi';
 interface StoreContextType {
   products: Product[];
   categories: Category[];
@@ -40,10 +53,10 @@ interface StoreContextType {
   dateRangeStats: DateRangeStats;
 
   // Product actions
-  addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  restoreProduct: (id: string) => void;
+addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => Promise<void>;
+updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+deleteProduct: (id: string) => Promise<void>;
+restoreProduct: (id: string) => Promise<void>;
 
   // Category actions
   addCategory: (category: Omit<Category, 'id' | 'productsCount'>) => void;
@@ -52,8 +65,8 @@ interface StoreContextType {
   restoreCategory: (id: string) => void;
 
   // Order actions
-  updateOrderStatus: (id: string, status: OrderStatus) => void;
-  updatePaymentStatus: (id: string, status: PaymentStatus) => void;
+  updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
+updatePaymentStatus: (id: string, status: PaymentStatus) => Promise<void>;
   cancelOrder: (id: string) => void;
 
   // User actions
@@ -166,6 +179,34 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return INITIAL_EXPENSES;
   });
 
+  const [monthlyGoal, setMonthlyGoal] = useState(1000000);
+  const [visitors, setVisitors] = useState<any[]>([]);
+  useEffect(() => {
+  const loadGoal = async () => {
+    try {
+      const goal = await getMonthlyGoal();
+      setMonthlyGoal(Number(goal));
+    } catch (error) {
+      console.error("Failed to load monthly goal:", error);
+    }
+  };
+
+  loadGoal();
+}, []);
+
+useEffect(() => {
+  const loadVisitors = async () => {
+    try {
+      const data = await getVisitors();
+      setVisitors(data);
+    } catch (error) {
+      console.error("Failed to load visitors:", error);
+    }
+  };
+
+  loadVisitors();
+}, []);
+
   const [storefront, setStorefront] = useState<StorefrontConfig>(() => {
     try {
       const saved = localStorage.getItem('store_storefront');
@@ -222,6 +263,78 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('info', 'Date filter applied', `Dashboard updated for ${newRange.label}`);
   };
 
+// Load products from MongoDB
+useEffect(() => {
+  const loadProducts = async () => {
+    try {
+      const data = await getAdminProducts();
+      setProducts(data);
+    } catch (error) {
+      addToast(
+        'error',
+        'Products loading failed',
+        error instanceof Error ? error.message : 'Unable to load products'
+      );
+    }
+  };
+
+  loadProducts();
+}, []);
+
+// Load orders from MongoDB
+useEffect(() => {
+  const loadOrders = async () => {
+    try {
+      const data = await getAdminOrders();
+
+      const mappedOrders: Order[] = data.map((o: any) => ({
+        id: o._id,
+        orderNumber: o.orderId,
+        visitorId: o.visitorId,
+        customer: {
+          name: o.customer.fullName,
+          email: o.customer.email,
+          phone: o.customer.phone,
+          address: o.shipping.address,
+          city: o.shipping.city,
+          country: o.shipping.province,
+        },
+        items: o.items.map((item: any) => ({
+          productId: item.id,
+          productName: item.product?.name || 'Product',
+          sku: item.product?.sku || '',
+          image: item.product?.images?.[0] || item.product?.image || '',
+          quantity: item.quantity,
+          sellingPrice: item.price,
+          costPrice: item.product?.costPrice || 0,
+        })),
+        subtotal: o.subtotal,
+        deliveryCharges: o.deliveryFee,
+        discount: o.discountAmount,
+        refund: 0,
+        total: o.total,
+        status: (o.orderStatus || 'pending').charAt(0).toUpperCase() +
+          (o.orderStatus || 'pending').slice(1),
+        paymentStatus: (o.paymentStatus || 'unpaid').charAt(0).toUpperCase() +
+          (o.paymentStatus || 'unpaid').slice(1),
+        paymentMethod: o.paymentMethod,
+        date: o.createdAt,
+        timeline: [],
+      }));
+
+      setOrders(mappedOrders);
+    } catch (error) {
+      addToast(
+        'error',
+        'Orders loading failed',
+        error instanceof Error ? error.message : 'Unable to load orders'
+      );
+    }
+  };
+
+  loadOrders();
+}, []);
+
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('store_products', JSON.stringify(products));
@@ -258,55 +371,57 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
-
+  
   // Product handlers
-  const addProduct = (productData: Omit<Product, 'id' | 'lastUpdated'>) => {
-    const newProduct: Product = {
-      ...productData,
-      id: `prod-${Date.now()}`,
-      lastUpdated: new Date().toLocaleDateString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-      }),
-    };
-    setProducts((prev) => [newProduct, ...prev]);
-    // update category product count
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.name === productData.category ? { ...c, productsCount: c.productsCount + 1 } : c
-      )
-    );
-    addToast('success', 'Product created successfully', `${newProduct.name} added to inventory.`);
+  const addProduct = async (
+    productData: Omit<Product, 'id' | 'lastUpdated'>
+  ): Promise<void> => {
+    try {
+      const newProduct = await createProduct(productData);
+      setProducts((prev) => [newProduct, ...prev]);
+      addToast('success', 'Product created successfully', `${newProduct.name} added to inventory.`);
+    } catch (error) {
+      addToast('error', 'Product creation failed', error instanceof Error ? error.message : 'Something went wrong');
+    }
   };
 
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              ...updates,
-              lastUpdated: new Date().toLocaleDateString('en-US', {
-                month: '2-digit',
-                day: '2-digit',
-                year: 'numeric',
-              }),
-            }
-          : p
-      )
-    );
-    addToast('success', 'Product updated successfully');
+  const updateProduct = async (
+    id: string,
+    updates: Partial<Product>
+  ): Promise<void> => {
+    try {
+      const updatedProduct = await editProduct(id, updates);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? updatedProduct : p))
+      );
+      addToast('success', 'Product updated successfully');
+    } catch (error) {
+      addToast('error', 'Product update failed', error instanceof Error ? error.message : 'Something went wrong');
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, isDeleted: true } : p)));
-    addToast('info', 'Product moved to deleted archive');
+  const deleteProduct = async (id: string): Promise<void> => {
+    try {
+      await removeProduct(id);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isDeleted: true } : p))
+      );
+      addToast('info', 'Product moved to deleted archive');
+    } catch (error) {
+      addToast('error', 'Product deletion failed', error instanceof Error ? error.message : 'Something went wrong');
+    }
   };
 
-  const restoreProduct = (id: string) => {
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, isDeleted: false } : p)));
-    addToast('success', 'Product restored successfully');
+  const restoreProduct = async (id: string): Promise<void> => {
+    try {
+      const restoredProduct = await restoreProductApi(id);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? restoredProduct : p))
+      );
+      addToast('success', 'Product restored successfully');
+    } catch (error) {
+      addToast('error', 'Product restore failed', error instanceof Error ? error.message : 'Something went wrong');
+    }
   };
 
   // Category handlers
@@ -334,31 +449,61 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, isDeleted: false } : c)));
     addToast('success', 'Category restored successfully');
   };
-
+ 
   // Order handlers
-  const updateOrderStatus = (id: string, status: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id === id) {
-          const updatedTimeline = [
-            ...o.timeline,
-            {
-              title: `Status changed to ${status}`,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              completed: true,
-            },
-          ];
-          return { ...o, status, timeline: updatedTimeline };
-        }
-        return o;
-      })
-    );
-    addToast('success', 'Order status updated', `Order status changed to ${status}`);
+  const updateOrderStatus = async (id: string, status: OrderStatus) => {
+    try {
+      await updateOrderStatusApi(id, status);
+
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o.id === id) {
+            return {
+              ...o,
+              status,
+              timeline: [
+                ...o.timeline,
+                {
+                  title: `Status changed to ${status}`,
+                  time: new Date().toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }),
+                  completed: true,
+                },
+              ],
+            };
+          }
+          return o;
+        })
+      );
+
+      addToast('success', 'Order status updated', `Order status changed to ${status}`);
+    } catch (error) {
+      addToast(
+        'error',
+        'Order status update failed',
+        error instanceof Error ? error.message : 'Something went wrong'
+      );
+    }
   };
 
-  const updatePaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, paymentStatus } : o)));
-    addToast('success', 'Payment status updated', `Payment marked as ${paymentStatus}`);
+  const updatePaymentStatus = async (id: string, paymentStatus: PaymentStatus) => {
+    try {
+      await updatePaymentStatusApi(id, paymentStatus);
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === id ? { ...o, paymentStatus } : o))
+      );
+
+      addToast('success', 'Payment status updated', `Payment marked as ${paymentStatus}`);
+    } catch (error) {
+      addToast(
+        'error',
+        'Payment status update failed',
+        error instanceof Error ? error.message : 'Something went wrong'
+      );
+    }
   };
 
   const cancelOrder = (id: string) => {
@@ -451,8 +596,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Compute dynamic date-dependent statistics and chart series based on selectedDateRange
   const dateRangeStats = useMemo(() => {
-    return computeMetricsForRange(dateRange, expenses);
-  }, [dateRange, expenses]);
+    return computeMetricsForRange(dateRange, expenses ,orders, products,monthlyGoal, visitors);
+  }, [dateRange, expenses, orders, products, monthlyGoal, visitors]);
 
   // Aggregate stats conforming to existing interface while reflecting the active date filter
   const stats = useMemo(() => {

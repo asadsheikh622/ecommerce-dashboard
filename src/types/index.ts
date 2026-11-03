@@ -53,6 +53,7 @@ export interface OrderItem {
 export interface Order {
   id: string;
   orderNumber: string; // e.g. #ORD-2026-1002
+  visitorId?: string;
   customer: {
     name: string;
     email: string;

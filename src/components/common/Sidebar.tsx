@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
   Package,
@@ -31,7 +32,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMobile }) => {
   const location = useLocation();
   const { products, categories, orders, users, addToast } = useStore();
-
+const { logout } = useAuth();
   // Submenu toggle states
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({
     products: location.pathname.startsWith('/products'),
@@ -46,8 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
   const activeOrdersCount = orders.filter((o) => o.status === 'Processing' || o.status === 'Pending').length;
 
   const handleLogout = () => {
-    addToast('info', 'Session ended', 'You have been logged out of the admin console.');
-  };
+  logout();
+};
 
   const sidebarContent = (
     <div className="flex flex-col h-full select-none">

@@ -272,17 +272,15 @@ export const OverviewPage: React.FC<{ onMobileMenuToggle: () => void }> = ({ onM
             {weeklyBarData.map((b) => (
               <div key={b.day} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
                 <div
-                  className={`w-full rounded-md transition-all duration-300 ${
-                    b.active
+                  className={`w-full rounded-md transition-all duration-300 ${b.active
                       ? 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.5)]'
                       : 'bg-zinc-800 hover:bg-zinc-700'
-                  }`}
+                    }`}
                   style={{ height: `${(b.visitors / 12) * 100}%` }}
                 />
                 <span
-                  className={`text-[10px] font-semibold ${
-                    b.active ? 'text-orange-400 font-bold' : 'text-zinc-500'
-                  }`}
+                  className={`text-[10px] font-semibold ${b.active ? 'text-orange-400 font-bold' : 'text-zinc-500'
+                    }`}
                 >
                   {b.day}
                 </span>
@@ -468,7 +466,12 @@ export const OverviewPage: React.FC<{ onMobileMenuToggle: () => void }> = ({ onM
               </div>
               <div className="text-xs text-zinc-400 mt-1">Industry avg: 3.2%</div>
               <div className="text-[11px] text-orange-400 font-semibold mt-1">
-                +0.8% increase this period
+                {dateRangeStats.conversionGrowth > 0 ? '+' : ''}
+                {dateRangeStats.conversionGrowth}% {dateRangeStats.conversionGrowth > 0
+                  ? 'increase'
+                  : dateRangeStats.conversionGrowth < 0
+                    ? 'decrease'
+                    : 'change'} this period
               </div>
             </div>
 

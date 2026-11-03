@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState } from 'react';
 import { Currency } from '../types';
 import {
   DEFAULT_USD_TO_PKR_RATE,
@@ -13,10 +14,14 @@ interface CurrencyContextType {
   setCurrency: (currency: Currency) => void;
   exchangeRate: number;
   setExchangeRate: (rate: number) => void;
-  format: (amountUSD: number, options?: { compact?: boolean; decimals?: number; showSymbol?: boolean }) => string;
+  format: (amountPKR: number, options?: {
+    compact?: boolean;
+    decimals?: number;
+    showSymbol?: boolean;
+  }) => string;
   symbol: string;
   convertToBase: (amount: number) => number;
-  convertFromBase: (amountUSD: number) => number;
+  convertFromBase: (amountPKR: number) => number;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -24,7 +29,7 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currency, setCurrencyState] = useState<Currency>(() => {
     const saved = localStorage.getItem('selectedCurrency');
-    return (saved === 'USD' || saved === 'PKR') ? saved : 'PKR'; // Default to PKR as requested
+    return saved === 'USD' || saved === 'PKR' ? saved : 'PKR';
   });
 
   const [exchangeRate, setExchangeRateState] = useState<number>(() => {
@@ -44,8 +49,11 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const format = (amountUSD: number, options?: { compact?: boolean; decimals?: number; showSymbol?: boolean }) => {
-    return formatCurrency(amountUSD, currency, exchangeRate, options);
+  const format = (
+    amountPKR: number,
+    options?: { compact?: boolean; decimals?: number; showSymbol?: boolean }
+  ) => {
+    return formatCurrency(amountPKR, currency, exchangeRate, options);
   };
 
   const symbol = getCurrencySymbol(currency);
@@ -54,8 +62,8 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return convertToBaseUtil(amountInCurrent, currency, exchangeRate);
   };
 
-  const convertFromBase = (amountUSD: number) => {
-    return convertFromBaseUtil(amountUSD, currency, exchangeRate);
+  const convertFromBase = (amountPKR: number) => {
+    return convertFromBaseUtil(amountPKR, currency, exchangeRate);
   };
 
   return (
@@ -78,8 +86,10 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useCurrency = () => {
   const context = useContext(CurrencyContext);
+
   if (!context) {
     throw new Error('useCurrency must be used within a CurrencyProvider');
   }
+
   return context;
 };
