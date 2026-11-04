@@ -32,7 +32,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMobile }) => {
   const location = useLocation();
   const { products, categories, orders, users, addToast } = useStore();
-const { logout } = useAuth();
+  const { logout } = useAuth();
   // Submenu toggle states
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({
     products: location.pathname.startsWith('/products'),
@@ -47,8 +47,8 @@ const { logout } = useAuth();
   const activeOrdersCount = orders.filter((o) => o.status === 'Processing' || o.status === 'Pending').length;
 
   const handleLogout = () => {
-  logout();
-};
+    logout();
+  };
 
   const sidebarContent = (
     <div className="flex flex-col h-full select-none">
@@ -72,7 +72,7 @@ const { logout } = useAuth();
             onClick={onCloseMobile}
             className="lg:hidden p-1.5 rounded-xl text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800"
           >
-            <X className="w-4 h-4" /> 
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -89,10 +89,9 @@ const { logout } = useAuth();
               to="/"
               onClick={onCloseMobile}
               className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isActive || location.pathname === '/'
-                    ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${isActive || location.pathname === '/'
+                  ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`
               }
             >
@@ -115,30 +114,27 @@ const { logout } = useAuth();
               <button
                 type="button"
                 onClick={() => toggleSubmenu('products')}
-                className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  location.pathname.startsWith('/products')
+                className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${location.pathname.startsWith('/products')
                     ? 'bg-orange-500/10 border border-orange-500/25 text-white shadow-sm'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Package
-                    className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${
-                      location.pathname.startsWith('/products')
+                    className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${location.pathname.startsWith('/products')
                         ? 'text-orange-400'
                         : 'text-zinc-400 group-hover:text-orange-400'
-                    }`}
+                      }`}
                   />
                   <span className={location.pathname.startsWith('/products') ? 'text-white font-semibold' : ''}>
                     Products
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    openSubmenus.products
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${openSubmenus.products
                       ? 'rotate-0 text-orange-400'
                       : '-rotate-90 text-zinc-500'
-                  }`}
+                    }`}
                 />
               </button>
 
@@ -158,10 +154,9 @@ const { logout } = useAuth();
                       to="/products/all"
                       onClick={onCloseMobile}
                       className={({ isActive }) =>
-                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                          isActive
-                            ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isActive
+                          ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
                         }`
                       }
                     >
@@ -177,10 +172,9 @@ const { logout } = useAuth();
                       to="/products/deleted"
                       onClick={onCloseMobile}
                       className={({ isActive }) =>
-                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                          isActive
-                            ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isActive
+                          ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
                         }`
                       }
                     >
@@ -201,30 +195,27 @@ const { logout } = useAuth();
               <button
                 type="button"
                 onClick={() => toggleSubmenu('categories')}
-                className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  location.pathname.startsWith('/categories')
+                className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${location.pathname.startsWith('/categories')
                     ? 'bg-orange-500/10 border border-orange-500/25 text-white shadow-sm'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <LayoutGrid
-                    className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${
-                      location.pathname.startsWith('/categories')
+                    className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${location.pathname.startsWith('/categories')
                         ? 'text-orange-400'
                         : 'text-zinc-400 group-hover:text-orange-400'
-                    }`}
+                      }`}
                   />
                   <span className={location.pathname.startsWith('/categories') ? 'text-white font-semibold' : ''}>
                     Categories
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    openSubmenus.categories
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${openSubmenus.categories
                       ? 'rotate-0 text-orange-400'
                       : '-rotate-90 text-zinc-500'
-                  }`}
+                    }`}
                 />
               </button>
 
@@ -244,10 +235,9 @@ const { logout } = useAuth();
                       to="/categories/all"
                       onClick={onCloseMobile}
                       className={({ isActive }) =>
-                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                          isActive
-                            ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isActive
+                          ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
                         }`
                       }
                     >
@@ -263,10 +253,9 @@ const { logout } = useAuth();
                       to="/categories/deleted"
                       onClick={onCloseMobile}
                       className={({ isActive }) =>
-                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                          isActive
-                            ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isActive
+                          ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
                         }`
                       }
                     >
@@ -295,10 +284,9 @@ const { logout } = useAuth();
               to="/orders"
               onClick={onCloseMobile}
               className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${isActive
+                  ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`
               }
             >
@@ -318,30 +306,27 @@ const { logout } = useAuth();
               <button
                 type="button"
                 onClick={() => toggleSubmenu('users')}
-                className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  location.pathname.startsWith('/users')
+                className={`group w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${location.pathname.startsWith('/users')
                     ? 'bg-orange-500/10 border border-orange-500/25 text-white shadow-sm'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Users
-                    className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${
-                      location.pathname.startsWith('/users')
+                    className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${location.pathname.startsWith('/users')
                         ? 'text-orange-400'
                         : 'text-zinc-400 group-hover:text-orange-400'
-                    }`}
+                      }`}
                   />
                   <span className={location.pathname.startsWith('/users') ? 'text-white font-semibold' : ''}>
                     Users
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    openSubmenus.users
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${openSubmenus.users
                       ? 'rotate-0 text-orange-400'
                       : '-rotate-90 text-zinc-500'
-                  }`}
+                    }`}
                 />
               </button>
 
@@ -361,10 +346,9 @@ const { logout } = useAuth();
                       to="/users/all"
                       onClick={onCloseMobile}
                       className={({ isActive }) =>
-                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                          isActive
-                            ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isActive
+                          ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
                         }`
                       }
                     >
@@ -380,10 +364,9 @@ const { logout } = useAuth();
                       to="/users/deleted"
                       onClick={onCloseMobile}
                       className={({ isActive }) =>
-                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                          isActive
-                            ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                        `group/item relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isActive
+                          ? 'bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
                         }`
                       }
                     >
@@ -411,10 +394,9 @@ const { logout } = useAuth();
               to="/profit-loss"
               onClick={onCloseMobile}
               className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${isActive
+                  ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`
               }
             >
@@ -428,10 +410,9 @@ const { logout } = useAuth();
               to="/expenses"
               onClick={onCloseMobile}
               className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${isActive
+                  ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`
               }
             >
@@ -449,31 +430,28 @@ const { logout } = useAuth();
             Store & Config
           </div>
           <div className="space-y-1">
-            <NavLink
-              to="/storefront"
+
+            <a
+              href="https://2nd-ecommerce-assignment.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={onCloseMobile}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-                }`
-              }
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60"
             >
               <div className="flex items-center gap-3">
                 <Store className="w-4 h-4" />
                 <span>Storefront</span>
               </div>
-            </NavLink>
+            </a>
+
 
             <NavLink
               to="/settings"
               onClick={onCloseMobile}
               className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${isActive
+                  ? 'bg-zinc-800 border border-zinc-700 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`
               }
             >
