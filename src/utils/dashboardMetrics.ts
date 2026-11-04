@@ -47,26 +47,27 @@ export function computeMetricsForRange(
   const startTime = start.getTime();
   const endTime = end.getTime();
 
-  const periodOrders = orders.filter((order) => {
-    const orderTime = new Date(order.date).getTime();
+const periodOrders = orders.filter((order) => {
+  const orderTime = new Date(order.date).getTime();
 
-    return (
-      orderTime >= startTime &&
-      orderTime <= endTime &&
-      order.status !== 'Cancelled'
-    );
-  });
-
-  const deliveredOrders = periodOrders.filter(
-    (order) => order.status === 'Delivered'
+  return (
+    Number.isFinite(orderTime) &&
+    orderTime >= startTime &&
+    orderTime <= endTime &&
+    order.status !== 'Cancelled'
   );
+});
 
-  const rev = deliveredOrders.reduce(
-    (sum, order) => sum + order.subtotal - order.discount,
-    0
-  );
+const deliveredOrders = periodOrders.filter(
+  (order) => order.status === 'Delivered'
+);
 
-  const ordersCount = periodOrders.length;
+const rev = deliveredOrders.reduce(
+  (sum, order) => sum + Number(order.subtotal || 0) - Number(order.discount || 0),
+  0
+);
+
+const ordersCount = periodOrders.length;
 
   const cost = deliveredOrders.reduce((sum, order) => {
     return sum + order.items.reduce((itemSum, item) => {
@@ -169,37 +170,63 @@ const conversionGrowth = previousConversion > 0
   ? Number((conversion - previousConversion).toFixed(1))
   : 0;
 
+
   const revenueChart: { label: string; value: number }[] = [];
-  const customerChart: { label: string; value: number }[] = [];
-  const salesChart: { label: string; value: number }[] = [];
-  const visitorBars: { label: string; visitors: number; active: boolean }[] = [];
+const customerChart: { label: string; value: number }[] = [];
+const salesChart: { label: string; value: number }[] = [];
+const visitorBars: { label: string; visitors: number; active: boolean }[] = [];
 
 for (let i = 6; i >= 0; i--) {
   const day = new Date(end);
   day.setDate(day.getDate() - i);
 
-  const dayKey = day.toLocaleDateString('en-CA', {
-    timeZone: 'Asia/Karachi',
+  const dayStart = new Date(day);
+  dayStart.setHours(0, 0, 0, 0);
+
+  const dayEnd = new Date(day);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const dayOrders = deliveredOrders.filter((order) => {
+    const orderDate = new Date(order.date).getTime();
+    return orderDate >= dayStart.getTime() && orderDate <= dayEnd.getTime();
+  });
+
+  const dayRevenue = dayOrders.reduce(
+    (sum, order) => sum + Number(order.subtotal || 0) - Number(order.discount || 0),
+    0
+  );
+
+  const dayCustomers = new Set(
+    dayOrders.map((order) => order.customer.email).filter(Boolean)
+  ).size;
+
+  revenueChart.push({
+    label: day.toLocaleDateString('en-PK', { weekday: 'short' }),
+    value: dayRevenue,
+  });
+
+  customerChart.push({
+    label: day.toLocaleDateString('en-PK', { weekday: 'short' }),
+    value: dayCustomers,
+  });
+
+  salesChart.push({
+    label: day.toLocaleDateString('en-PK', { weekday: 'short' }),
+    value: dayRevenue,
   });
 
   const dayVisitors = visitors.filter((visitor) => {
-    const visitDate = new Date(visitor.createdAt).toLocaleDateString(
-      'en-CA',
-      { timeZone: 'Asia/Karachi' }
-    );
-
-    return visitDate === dayKey;
+    const visitDate = new Date(visitor.createdAt).getTime();
+    return visitDate >= dayStart.getTime() && visitDate <= dayEnd.getTime();
   }).length;
 
   visitorBars.push({
-    label: day.toLocaleDateString('en-PK', {
-      weekday: 'short',
-      timeZone: 'Asia/Karachi',
-    }),
+    label: day.toLocaleDateString('en-PK', { weekday: 'short' }),
     visitors: dayVisitors,
     active: i === 0,
   });
 }
+
 
   const grossProfit = rev - cost;
 const totalRefunds = deliveredOrders
